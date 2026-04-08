@@ -12,23 +12,37 @@ const FilePreview: React.FC<FilePreviewProps> = ({ files, imageDataList, onRemov
   }
 
   return (
-    <div className="flex flex-row overflow-x-auto mx-2 -mt-1 p-2 bg-bolt-elements-background-depth-3 border border-b-none border-bolt-elements-borderColor rounded-lg rounded-b-none">
+    <div className="flex flex-row overflow-x-auto gap-3 p-3 bg-black/10 dark:bg-black/20 border border-white/10 rounded-xl">
       {files.map((file, index) => (
-        <div key={file.name + file.size} className="mr-2 relative">
-          {imageDataList[index] && (
-            <div className="relative">
-              <img src={imageDataList[index]} alt={file.name} className="max-h-20 rounded-lg" />
-              <button
-                onClick={() => onRemove(index)}
-                className="absolute -top-1 -right-1 z-10 bg-black rounded-full w-5 h-5 shadow-md hover:bg-gray-900 transition-colors flex items-center justify-center"
-              >
-                <div className="i-ph:x w-3 h-3 text-gray-200" />
-              </button>
-              <div className="absolute bottom-0 w-full h-5 flex items-center px-2 rounded-b-lg text-bolt-elements-textTertiary font-thin text-xs bg-bolt-elements-background-depth-2">
-                <span className="truncate">{file.name}</span>
+        <div key={file.name + file.size} className="relative group shrink-0">
+          {imageDataList[index] && imageDataList[index].startsWith('data:image') ? (
+            <>
+              <div className="relative border border-white/10 rounded-lg overflow-hidden bg-black/20 backdrop-blur-md">
+                <img src={imageDataList[index]} alt={file.name} className="max-h-24 w-auto object-cover" />
+                <div className="absolute bottom-0 w-full flex items-center px-2 py-1 text-white font-medium text-[10px] bg-black/60 backdrop-blur-md">
+                  <span className="truncate">{file.name}</span>
+                </div>
               </div>
-            </div>
+            </>
+          ) : (
+            <>
+              <div className="relative border border-white/10 rounded-lg overflow-hidden bg-[#1A1C21] backdrop-blur-md h-24 w-28 flex flex-col">
+                <div className="p-2 text-[7px] text-[#A3A3A3] leading-tight break-words text-left flex-1" style={{ display: '-webkit-box', WebkitLineClamp: 7, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {imageDataList[index]?.replace('text:', '')}
+                </div>
+                <div className="absolute bottom-0 w-full flex items-center px-1.5 py-1 text-white font-medium text-[10px] bg-black/60 backdrop-blur-md border-t border-white/5">
+                  <div className="i-ph:file-text text-[#2A65D6] mr-1 shrink-0" />
+                  <span className="truncate">{file.name}</span>
+                </div>
+              </div>
+            </>
           )}
+          <button
+            onClick={() => onRemove(index)}
+            className="absolute -top-2.5 -right-2.5 z-10 bg-[#333] hover:bg-[#D95757] rounded-full w-5 h-5 shadow-lg transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"
+          >
+            <div className="i-ph:x w-3 h-3 text-white" />
+          </button>
         </div>
       ))}
     </div>
