@@ -33,6 +33,13 @@ export default class GoogleProvider extends BaseProvider {
       maxTokenAllowed: 1000000,
       maxCompletionTokens: 8192,
     },
+    {
+      name: 'gemini-3.1-flash-lite-preview',
+      label: 'Gemini 3.1 Flash Lite Preview',
+      provider: 'Google',
+      maxTokenAllowed: 1000000,
+      maxCompletionTokens: 8192,
+    },
   ];
 
   async getDynamicModels(
@@ -91,6 +98,8 @@ export default class GoogleProvider extends BaseProvider {
         contextWindow = 1000000; // Gemini 1.5 Flash has 1M context
       } else if (modelName.includes('gemini-2.0-flash')) {
         contextWindow = 1000000; // Gemini 2.0 Flash has 1M context
+      } else if (modelName.includes('gemini-3.1-flash')) {
+        contextWindow = 1000000; // Gemini 3.1 Flash has 1M context
       } else if (modelName.includes('gemini-pro')) {
         contextWindow = 32000; // Gemini Pro has 32k context
       } else if (modelName.includes('gemini-flash')) {

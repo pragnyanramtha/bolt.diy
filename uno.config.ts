@@ -95,6 +95,19 @@ const COLOR_PRIMITIVES = {
     red: generateAlphaPalette(BASE_COLORS.red[500]),
     accent: generateAlphaPalette(BASE_COLORS.accent[500]),
   },
+  bg: {
+    0: 'var(--bg-0)',
+    100: 'var(--bg-100)',
+    200: 'var(--bg-200)',
+    300: 'var(--bg-300)',
+  },
+  text: {
+    100: 'var(--text-100)',
+    200: 'var(--text-200)',
+    300: 'var(--text-300)',
+    400: 'var(--text-400)',
+    500: 'var(--text-500)',
+  },
 };
 
 export default defineConfig({
