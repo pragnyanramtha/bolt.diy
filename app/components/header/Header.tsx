@@ -15,12 +15,13 @@ export function Header() {
         'border-bolt-elements-borderColor': chat.started,
       })}
     >
-      <div className="flex items-center gap-2 z-logo text-bolt-elements-textPrimary cursor-pointer">
-        <div className="i-ph:sidebar-simple-duotone text-xl" />
-        <a href="/" className="text-2xl font-semibold text-accent flex items-center">
-          {/* <span className="i-bolt:logo-text?mask w-[46px] inline-block" /> */}
-          <img src="/logo-light-styled.png" alt="logo" className="w-[90px] inline-block dark:hidden" />
-          <img src="/logo-dark-styled.png" alt="logo" className="w-[90px] inline-block hidden dark:block" />
+      <div 
+        className="flex items-center gap-2 z-logo text-bolt-elements-textPrimary cursor-pointer sidebar-toggle"
+        onClick={() => document.dispatchEvent(new CustomEvent('toggleSidebar'))}
+      >
+        <div className="i-ph:sidebar-simple-duotone text-xl hover:text-white transition-colors" />
+        <a href="/" className="text-2xl font-semibold text-accent flex items-center tracking-wide onClick={(e) => e.stopPropagation()}">
+          Kua
         </a>
       </div>
       {chat.started && ( // Display ChatDescription and HeaderActionButtons only when the chat has started.
