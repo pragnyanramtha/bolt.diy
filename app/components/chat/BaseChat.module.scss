@@ -18,6 +18,17 @@
   opacity: 1;
 }
 
+/* When chat has started, the workbench panel can appear to the right.
+   Cap the chat column so content doesn't bleed under the fixed workbench */
+.BaseChat[data-chat-started='true'] {
+  @media (min-width: 1024px) {
+    .Chat {
+      max-width: var(--chat-min-width);
+      transition: max-width 0.2s ease;
+    }
+  }
+}
+
 .PromptEffectContainer {
   --prompt-container-offset: 50px;
   --prompt-line-stroke-width: 1px;
