@@ -14,11 +14,7 @@ import { getApiKeysFromCookies } from './APIKeyManager';
 import Cookies from 'js-cookie';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import styles from './BaseChat.module.scss';
-import { ImportButtons } from '~/components/chat/chatExportAndImport/ImportButtons';
-import { ExamplePrompts } from '~/components/chat/ExamplePrompts';
-import GitCloneButton from './GitCloneButton';
 import type { ProviderInfo } from '~/types/model';
-import StarterTemplates from './StarterTemplates';
 import type { ActionAlert, SupabaseAlert, DeployAlert, LlmErrorAlertType } from '~/types/actions';
 import DeployChatAlert from '~/components/deploy/DeployAlert';
 import ChatAlert from './ChatAlert';
@@ -313,8 +309,18 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
     };
 
     const handlePaste = async (e: React.ClipboardEvent) => {
-      const items = e.clipboardData?.items;
+      const pastedText = e.clipboardData?.getData('text');
+      
+      // Containerize very large pasted text chunks into text file artifacts
+      if (pastedText && pastedText.length > 1000) {
+        e.preventDefault();
+        const file = new File([pastedText], 'pasted_text.txt', { type: 'text/plain' });
+        setUploadedFiles?.([...uploadedFiles, file]);
+        setImageDataList?.([...imageDataList, `text:${pastedText.slice(0, 800)}`]);
+        return;
+      }
 
+      const items = e.clipboardData?.items;
       if (!items) {
         return;
       }
@@ -346,33 +352,34 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
         ref={ref}
         className={classNames(styles.BaseChat, 'relative flex h-full w-full overflow-hidden')}
         data-chat-visible={showChat}
+        data-chat-started={chatStarted}
       >
         <ClientOnly>{() => <Menu />}</ClientOnly>
-        <div className="flex flex-col lg:flex-row overflow-y-auto w-full h-full">
-          <div className={classNames(styles.Chat, 'flex flex-col flex-grow lg:min-w-[var(--chat-min-width)] h-full')}>
+        <div className="flex flex-col lg:flex-row overflow-hidden w-full h-full">
+          <div className={classNames(styles.Chat, 'flex flex-col flex-grow lg:min-w-[var(--chat-min-width)] h-full overflow-y-auto')}>
             {!chatStarted && (
-              <div id="intro" className="mt-[16vh] max-w-2xl mx-auto text-center px-4 lg:px-0">
-                <h1 className="text-3xl lg:text-6xl font-bold text-bolt-elements-textPrimary mb-4 animate-fade-in">
-                  Where ideas begin
+              <div id="intro" className="mt-[20vh] max-w-2xl mx-auto text-center px-4 lg:px-0 select-none">
+                <h1 className="text-4xl lg:text-5xl font-semibold tracking-tight mb-4 animate-fade-in bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
+                  Build stunning websites effortlessly
                 </h1>
-                <p className="text-md lg:text-xl mb-8 text-bolt-elements-textSecondary animate-fade-in animation-delay-200">
-                  Bring ideas to life in seconds or get help on existing projects.
+                <p className="text-sm lg:text-[17px] font-light mb-8 text-white/50 animate-fade-in animation-delay-200 max-w-lg mx-auto">
+                  Kua can create amazing websites with a few lines of prompt.
                 </p>
               </div>
             )}
             <StickToBottom
-              className={classNames('pt-6 px-2 sm:px-6 relative', {
+              className={classNames('pt-6 px-1 sm:px-2 relative', {
                 'h-full flex flex-col modern-scrollbar': chatStarted,
               })}
               resize="smooth"
               initial="smooth"
             >
-              <StickToBottom.Content className="flex flex-col gap-4 relative ">
+              <StickToBottom.Content className="flex flex-col gap-4 relative">
                 <ClientOnly>
                   {() => {
                     return chatStarted ? (
                       <Messages
-                        className="flex flex-col w-full flex-1 max-w-chat pb-4 mx-auto z-1"
+                        className="flex flex-col w-full flex-1 min-w-0 max-w-[760px] pb-32 mx-auto z-1"
                         messages={messages}
                         isStreaming={isStreaming}
                         append={append}
@@ -388,7 +395,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                 <ScrollToBottom />
               </StickToBottom.Content>
               <div
-                className={classNames('my-auto flex flex-col gap-2 w-full max-w-chat mx-auto z-prompt mb-6', {
+                className={classNames('my-auto flex flex-col gap-2 w-full max-w-[760px] mx-auto z-prompt mb-6', {
                   'sticky bottom-2': chatStarted,
                 })}
               >
@@ -471,26 +478,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                 />
               </div>
             </StickToBottom>
-            <div className="flex flex-col justify-center">
-              {!chatStarted && (
-                <div className="flex justify-center gap-2">
-                  {ImportButtons(importChat)}
-                  <GitCloneButton importChat={importChat} />
-                </div>
-              )}
-              <div className="flex flex-col gap-5">
-                {!chatStarted &&
-                  ExamplePrompts((event, messageInput) => {
-                    if (isStreaming) {
-                      handleStop?.();
-                      return;
-                    }
 
-                    handleSendMessage?.(event, messageInput);
-                  })}
-                {!chatStarted && <StarterTemplates />}
-              </div>
-            </div>
           </div>
           <ClientOnly>
             {() => (
