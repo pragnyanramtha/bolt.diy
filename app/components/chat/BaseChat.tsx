@@ -310,7 +310,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
 
     const handlePaste = async (e: React.ClipboardEvent) => {
       const pastedText = e.clipboardData?.getData('text');
-      
+
       // Containerize very large pasted text chunks into text file artifacts
       if (pastedText && pastedText.length > 1000) {
         e.preventDefault();

@@ -9,7 +9,6 @@ import { Button } from '~/components/ui/Button';
 import { db, deleteById, getAll, chatId, type ChatHistoryItem, useChatHistory } from '~/lib/persistence';
 import { cubicEasingFn } from '~/utils/easings';
 import { HistoryItem } from './HistoryItem';
-import { binDates } from './date-binning';
 import { useSearchFilter } from '~/lib/hooks/useSearchFilter';
 import { classNames } from '~/utils/classNames';
 import { useStore } from '@nanostores/react';
@@ -359,7 +358,6 @@ export const Menu = () => {
             </div>
           </div>
         </div>
-        <CurrentDateTime />
         <div className="flex-1 flex flex-col h-full w-full overflow-hidden">
           <div className="p-4 space-y-3">
             <div className="flex gap-2">
@@ -421,32 +419,24 @@ export const Menu = () => {
               </div>
             )}
             <DialogRoot open={dialogContent !== null}>
-              {binDates(filteredList).map(({ category, items }) => (
-                <div key={category} className="mt-2 first:mt-0 space-y-1">
-                  <div className="text-xs font-medium text-gray-500 dark:text-gray-400 sticky top-0 z-1 bg-white dark:bg-gray-950 px-4 py-1">
-                    {category}
-                  </div>
-                  <div className="space-y-0.5 pr-1">
-                    {items.map((item) => (
-                      <HistoryItem
-                        key={item.id}
-                        item={item}
-                        exportChat={exportChat}
-                        onDelete={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          console.log('Delete triggered for item:', item);
-                          setDialogContentWithLogging({ type: 'delete', item });
-                        }}
-                        onDuplicate={() => handleDuplicate(item.id)}
-                        selectionMode={selectionMode}
-                        isSelected={selectedItems.includes(item.id)}
-                        onToggleSelection={toggleItemSelection}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
+              <div className="space-y-0.5 pr-1 mt-2">
+                {filteredList.map((item) => (
+                  <HistoryItem
+                    key={item.id}
+                    item={item}
+                    exportChat={exportChat}
+                    onDelete={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      setDialogContentWithLogging({ type: 'delete', item });
+                    }}
+                    onDuplicate={() => handleDuplicate(item.id)}
+                    selectionMode={selectionMode}
+                    isSelected={selectedItems.includes(item.id)}
+                    onToggleSelection={toggleItemSelection}
+                  />
+                ))}
+              </div>
               <Dialog onBackdrop={closeDialog} onClose={closeDialog}>
                 {dialogContent?.type === 'delete' && (
                   <>
@@ -469,7 +459,6 @@ export const Menu = () => {
                       <DialogButton
                         type="danger"
                         onClick={(event) => {
-                          console.log('Dialog delete button clicked for item:', dialogContent.item);
                           deleteItem(event, dialogContent.item);
                           closeDialog();
                         }}
@@ -507,12 +496,7 @@ export const Menu = () => {
                       <DialogButton
                         type="danger"
                         onClick={() => {
-                          /*
-                           * Pass the current selectedItems to the delete function.
-                           * This captures the state at the moment the user confirms.
-                           */
                           const itemsToDeleteNow = [...selectedItems];
-                          console.log('Bulk delete confirmed for', itemsToDeleteNow.length, 'items', itemsToDeleteNow);
                           deleteSelectedItems(itemsToDeleteNow);
                           closeDialog();
                         }}
