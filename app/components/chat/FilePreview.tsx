@@ -27,7 +27,15 @@ const FilePreview: React.FC<FilePreviewProps> = ({ files, imageDataList, onRemov
           ) : (
             <>
               <div className="relative border border-white/10 rounded-lg overflow-hidden bg-[#1A1C21] backdrop-blur-md h-24 w-28 flex flex-col">
-                <div className="p-2 text-[7px] text-[#A3A3A3] leading-tight break-words text-left flex-1" style={{ display: '-webkit-box', WebkitLineClamp: 7, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                <div
+                  className="p-2 text-[7px] text-[#A3A3A3] leading-tight break-words text-left flex-1"
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 7,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
                   {imageDataList[index]?.replace('text:', '')}
                 </div>
                 <div className="absolute bottom-0 w-full flex items-center px-1.5 py-1 text-white font-medium text-[10px] bg-black/60 backdrop-blur-md border-t border-white/5">

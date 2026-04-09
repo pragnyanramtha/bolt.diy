@@ -119,6 +119,9 @@ importers:
       '@openrouter/ai-sdk-provider':
         specifier: ^0.0.5
         version: 0.0.5(zod@3.25.76)
+      '@paper-design/shaders-react':
+        specifier: ^0.0.72
+        version: 0.0.72(@types/react@18.3.23)(react@18.3.1)
       '@phosphor-icons/react':
         specifier: ^2.1.7
         version: 2.1.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2308,6 +2311,18 @@ packages:
   '@opentelemetry/api@1.9.0':
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
     engines: {node: '>=8.0.0'}
+
+  '@paper-design/shaders-react@0.0.72':
+    resolution: {integrity: sha512-q6KwquL93ZVNcuSM7pqzW0z/VLjnDVb/NSpYyGJBxf7MEHHCXx37E+zw/Px6RZLt3SGCUerIDDCGCMT385oW0w==}
+    peerDependencies:
+      '@types/react': ^18 || ^19
+      react: ^18 || ^19
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
+  '@paper-design/shaders@0.0.72':
+    resolution: {integrity: sha512-rk2BFuV5ood2DaivbxJC2jQMzaB434isDUzdUQ85Cy0OWnUMuxl8kyGMR74TDPyjo3EvcHIyreNLkJdRG+GfSA==}
 
   '@phosphor-icons/react@2.1.10':
     resolution: {integrity: sha512-vt8Tvq8GLjheAZZYa+YG/pW7HDbov8El/MANW8pOAz4eGxrwhnbfrQZq0Cp4q8zBEu8NIhHdnr+r8thnfRSNYA==}
@@ -10355,6 +10370,15 @@ snapshots:
       zod: 3.25.76
 
   '@opentelemetry/api@1.9.0': {}
+
+  '@paper-design/shaders-react@0.0.72(@types/react@18.3.23)(react@18.3.1)':
+    dependencies:
+      '@paper-design/shaders': 0.0.72
+      react: 18.3.1
+    optionalDependencies:
+      '@types/react': 18.3.23
+
+  '@paper-design/shaders@0.0.72': {}
 
   '@phosphor-icons/react@2.1.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:

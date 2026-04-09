@@ -15,12 +15,15 @@ export function Header() {
         'border-bolt-elements-borderColor': chat.started,
       })}
     >
-      <div 
+      <div
         className="flex items-center gap-2 z-logo text-bolt-elements-textPrimary cursor-pointer sidebar-toggle"
         onClick={() => document.dispatchEvent(new CustomEvent('toggleSidebar'))}
       >
         <div className="i-ph:sidebar-simple-duotone text-xl hover:text-white transition-colors" />
-        <a href="/" className="text-2xl font-semibold text-accent flex items-center tracking-wide onClick={(e) => e.stopPropagation()}">
+        <a
+          href="/"
+          className="text-2xl font-semibold text-accent flex items-center tracking-wide onClick={(e) => e.stopPropagation()}"
+        >
           Kua
         </a>
       </div>

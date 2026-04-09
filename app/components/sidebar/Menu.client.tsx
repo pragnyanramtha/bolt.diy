@@ -279,7 +279,9 @@ export const Menu = () => {
 
   useEffect(() => {
     const handleToggle = () => {
-      if (!isSettingsOpen) setOpen((prev) => !prev);
+      if (!isSettingsOpen) {
+        setOpen((prev) => !prev);
+      }
     };
 
     const handleClickOutside = (event: MouseEvent) => {

@@ -58,6 +58,7 @@ interface ChatBoxProps {
   selectedElement?: ElementInfo | null;
   setSelectedElement?: ((element: ElementInfo | null) => void) | undefined;
 }
+
 export const ChatBox: React.FC<ChatBoxProps> = (props) => {
   return (
     <div className="relative w-full max-w-[760px] mx-auto transition-all duration-300 font-sans px-2 sm:px-4">
@@ -78,14 +79,16 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
         </div>
       )}
 
-      <div className={classNames(
-        "flex flex-col items-stretch transition-all duration-300 relative z-10 rounded-2xl cursor-text border border-white/10 dark:border-white/5",
-        "shadow-[0_8px_30px_rgba(0,0,0,0.4)]",
-        "bg-white/80 dark:bg-[#1C1E23]/85 backdrop-blur-xl",
-        props.selectedElement ? "rounded-t-none" : ""
-      )}>
-        <div className="flex flex-col px-3.5 pt-3.5 pb-2.5 gap-3">
-
+      <div
+        className={classNames(
+          'flex flex-col items-stretch transition-all duration-300 relative z-10 cursor-text',
+          'rounded-[24px] border border-black/5 dark:border-white/[0.08]',
+          'shadow-lg dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
+          'bg-white/70 dark:bg-[#0A0A0A]/70 backdrop-blur-2xl ring-1 ring-white/50 dark:ring-white/10',
+          props.selectedElement ? 'rounded-t-none' : '',
+        )}
+      >
+        <div className="flex flex-col px-5 pt-5 pb-3.5 gap-3">
           {/* Active File Previews / Screenshot State */}
           <FilePreview
             files={props.uploadedFiles}
@@ -116,13 +119,21 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
                 onPaste={props.handlePaste}
                 onKeyDown={(event) => {
                   if (event.key === 'Enter') {
-                    if (event.shiftKey) return;
+                    if (event.shiftKey) {
+                      return;
+                    }
+
                     event.preventDefault();
+
                     if (props.isStreaming) {
                       props.handleStop?.();
                       return;
                     }
-                    if (event.nativeEvent.isComposing) return;
+
+                    if (event.nativeEvent.isComposing) {
+                      return;
+                    }
+
                     props.handleSendMessage?.(event);
                   }
                 }}
@@ -141,10 +152,12 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
                 onDrop={(e) => {
                   e.preventDefault();
                   e.currentTarget.style.border = 'none';
+
                   const files = Array.from(e.dataTransfer.files);
                   files.forEach((file) => {
                     if (file.type.startsWith('image/')) {
                       const reader = new FileReader();
+
                       reader.onload = (e) => {
                         const base64Image = e.target?.result as string;
                         props.setUploadedFiles?.([...props.uploadedFiles, file]);
@@ -154,14 +167,16 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
                     }
                   });
                 }}
-                placeholder={props.chatMode === 'build' ? 'What would you like to build today ?' : 'How can I help you today?'}
-                className="w-full !bg-transparent border-none focus:ring-0 outline-none text-[#1F1E1D] dark:text-[#ECECEC] text-[17px] placeholder:text-[#888888] dark:placeholder:text-[#888888] resize-none overflow-y-auto modern-scrollbar py-0 leading-relaxed block font-normal antialiased"
+                placeholder={
+                  props.chatMode === 'build' ? 'What would you like to build today ?' : 'How can I help you today?'
+                }
+                className="w-full !bg-transparent border-none focus:ring-0 outline-none text-gray-900 dark:text-gray-100 text-[17px] placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none overflow-y-auto modern-scrollbar py-0 leading-relaxed block font-normal antialiased"
                 rows={1}
                 autoFocus
                 style={{
-                  minHeight: "4.5rem",
-                  maxHeight: "350px",
-                  boxShadow: "none"
+                  minHeight: '4.5rem',
+                  maxHeight: '350px',
+                  boxShadow: 'none',
                 }}
                 translate="no"
               />
@@ -175,11 +190,11 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
               {/* Add Files */}
               <button
                 onClick={() => props.handleFileUpload()}
-                className="inline-flex items-center justify-center p-1.5 transition-colors duration-200 rounded-lg active:scale-95 text-[#888888] hover:text-[#3D3D3A] hover:bg-[#F0EEE6] dark:text-[#8A8A88] dark:hover:text-[#ECECEC] dark:hover:bg-[#454540] !bg-transparent hover:!bg-[#F0EEE6] dark:hover:!bg-[#454540]"
+                className="inline-flex items-center justify-center p-2 transition-all duration-200 rounded-xl active:scale-95 !bg-transparent hover:!bg-black/5 dark:hover:!bg-white/10 text-gray-500 hover:text-gray-700 dark:text-white/50 dark:hover:text-white"
                 title="Upload file"
                 aria-label="Upload file"
               >
-                <div className="i-ph:plus text-lg"></div>
+                <div className="i-ph:plus text-xl"></div>
               </button>
 
               {/* Enhance Prompt */}
@@ -187,8 +202,10 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
                 title="Enhance prompt"
                 disabled={props.input.length === 0 || props.enhancingPrompt}
                 className={classNames(
-                  'inline-flex items-center justify-center p-1.5 transition-colors duration-200 rounded-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed',
-                  props.enhancingPrompt ? 'text-[#2A65D6]' : 'text-[#888888] hover:text-[#3D3D3A] hover:bg-[#F0EEE6] dark:text-[#8A8A88] dark:hover:text-[#ECECEC] dark:hover:bg-[#454540] !bg-transparent hover:!bg-[#F0EEE6] dark:hover:!bg-[#454540]'
+                  'inline-flex items-center justify-center p-2 transition-all duration-200 rounded-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed !bg-transparent hover:!bg-black/5 dark:hover:!bg-white/10',
+                  props.enhancingPrompt
+                    ? 'text-blue-500'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-white/50 dark:hover:text-white',
                 )}
                 onClick={() => {
                   props.enhancePrompt?.();
@@ -196,9 +213,9 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
                 }}
               >
                 {props.enhancingPrompt ? (
-                  <div className="i-svg-spinners:90-ring-with-bg text-[#2A65D6] text-lg animate-spin"></div>
+                  <div className="i-svg-spinners:90-ring-with-bg text-blue-500 text-xl animate-spin"></div>
                 ) : (
-                  <div className="i-ph:sparkle text-lg"></div>
+                  <div className="i-ph:sparkle text-xl"></div>
                 )}
               </button>
             </div>
@@ -211,18 +228,19 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
                     props.handleStop?.();
                     return;
                   }
+
                   if (props.input.length > 0 || props.uploadedFiles.length > 0) {
                     props.handleSendMessage?.(event);
                   }
                 }}
-                disabled={(!props.input.length && !props.uploadedFiles.length) && !props.isStreaming}
+                disabled={!props.input.length && !props.uploadedFiles.length && !props.isStreaming}
                 className={classNames(
-                  "inline-flex items-center justify-center transition-colors rounded-xl h-8 w-8 active:scale-95",
-                  (props.input.length > 0 || props.isStreaming || props.uploadedFiles.length > 0)
-                    ? 'bg-[#2A65D6] dark:bg-[#2A65D6] text-[#FAF9F5] hover:opacity-90 shadow-[0_0_15px_rgba(42,101,214,0.4)]'
-                    : 'bg-[#2A65D6]/30 dark:bg-[#24272E] text-[#FAF9F5]/60 cursor-default'
+                  'inline-flex items-center justify-center transition-all duration-200 rounded-xl h-10 w-10 active:scale-95',
+                  props.input.length > 0 || props.isStreaming || props.uploadedFiles.length > 0
+                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-[0_0_15px_rgba(37,99,235,0.4)]'
+                    : 'bg-black/5 dark:bg-white/10 text-gray-400 dark:text-white/40 cursor-default',
                 )}
-                aria-label={props.isStreaming ? "Stop" : "Send message"}
+                aria-label={props.isStreaming ? 'Stop' : 'Send message'}
               >
                 {props.isStreaming ? (
                   <div className="i-ph:square-fill text-sm"></div>
@@ -237,4 +255,3 @@ export const ChatBox: React.FC<ChatBoxProps> = (props) => {
     </div>
   );
 };
-

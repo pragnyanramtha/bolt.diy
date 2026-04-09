@@ -1,5 +1,3 @@
 import GoogleProvider from './providers/google';
 
-export {
-  GoogleProvider,
-};
+export { GoogleProvider };

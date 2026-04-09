@@ -12,6 +12,8 @@ export default [
       '@blitz/catch-error-name': 'off',
       '@typescript-eslint/no-this-alias': 'off',
       '@typescript-eslint/no-empty-object-type': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'no-unused-vars': 'off',
       '@blitz/comment-syntax': 'off',
       '@blitz/block-scope-case': 'off',
       'array-bracket-spacing': ['error', 'never'],

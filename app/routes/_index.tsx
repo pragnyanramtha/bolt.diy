@@ -3,7 +3,7 @@ import { ClientOnly } from 'remix-utils/client-only';
 import { BaseChat } from '~/components/chat/BaseChat';
 import { Chat } from '~/components/chat/Chat.client';
 import { Header } from '~/components/header/Header';
-import AnoAI from '~/components/ui/AnimatedShaderBackground.client';
+import DitheringBackground from '~/components/ui/DitheringBackground.client';
 
 export const meta: MetaFunction = () => {
   return [{ title: 'Kua' }, { name: 'description', content: 'Talk with Kua, your AI assistant.' }];
@@ -20,7 +20,7 @@ export const loader = () => json({});
 export default function Index() {
   return (
     <div className="flex flex-col h-full w-full bg-bolt-elements-background-depth-1">
-      <ClientOnly>{() => <AnoAI />}</ClientOnly>
+      <ClientOnly>{() => <DitheringBackground />}</ClientOnly>
       <Header />
       <ClientOnly fallback={<BaseChat />}>{() => <Chat />}</ClientOnly>
     </div>

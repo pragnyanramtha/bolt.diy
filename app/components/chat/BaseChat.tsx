@@ -26,6 +26,7 @@ import { expoUrlAtom } from '~/lib/stores/qrCodeStore';
 import { useStore } from '@nanostores/react';
 import { StickToBottom, useStickToBottomContext } from '~/lib/hooks';
 import { ChatBox } from './ChatBox';
+import { CTASection } from '~/components/ui/hero-dithering-card';
 import type { DesignScheme } from '~/types/design-scheme';
 import type { ElementInfo } from '~/components/workbench/Inspector';
 import LlmErrorAlert from './LLMApiAlert';
@@ -314,13 +315,16 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
       // Containerize very large pasted text chunks into text file artifacts
       if (pastedText && pastedText.length > 1000) {
         e.preventDefault();
+
         const file = new File([pastedText], 'pasted_text.txt', { type: 'text/plain' });
         setUploadedFiles?.([...uploadedFiles, file]);
         setImageDataList?.([...imageDataList, `text:${pastedText.slice(0, 800)}`]);
+
         return;
       }
 
       const items = e.clipboardData?.items;
+
       if (!items) {
         return;
       }
@@ -356,16 +360,14 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
       >
         <ClientOnly>{() => <Menu />}</ClientOnly>
         <div className="flex flex-col lg:flex-row overflow-hidden w-full h-full">
-          <div className={classNames(styles.Chat, 'flex flex-col flex-grow lg:min-w-[var(--chat-min-width)] h-full overflow-y-auto')}>
+          <div
+            className={classNames(
+              styles.Chat,
+              'flex flex-col flex-grow lg:min-w-[var(--chat-min-width)] h-full overflow-y-auto',
+            )}
+          >
             {!chatStarted && (
-              <div id="intro" className="mt-[20vh] max-w-2xl mx-auto text-center px-4 lg:px-0 select-none">
-                <h1 className="text-4xl lg:text-5xl font-semibold tracking-tight mb-4 animate-fade-in bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
-                  Build stunning websites effortlessly
-                </h1>
-                <p className="text-sm lg:text-[17px] font-light mb-8 text-white/50 animate-fade-in animation-delay-200 max-w-lg mx-auto">
-                  Kua can create amazing websites with a few lines of prompt.
-                </p>
-              </div>
+              <CTASection />
             )}
             <StickToBottom
               className={classNames('pt-6 px-1 sm:px-2 relative', {
@@ -478,7 +480,6 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
                 />
               </div>
             </StickToBottom>
-
           </div>
           <ClientOnly>
             {() => (
