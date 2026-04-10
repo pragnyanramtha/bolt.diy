@@ -366,9 +366,7 @@ export const BaseChat = React.forwardRef<HTMLDivElement, BaseChatProps>(
               'flex flex-col flex-grow lg:min-w-[var(--chat-min-width)] h-full overflow-y-auto',
             )}
           >
-            {!chatStarted && (
-              <CTASection />
-            )}
+            {!chatStarted && <CTASection />}
             <StickToBottom
               className={classNames('pt-4 px-0 relative', {
                 'h-full flex flex-col modern-scrollbar': chatStarted,

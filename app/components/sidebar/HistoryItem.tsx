@@ -38,7 +38,10 @@ export function HistoryItem({ item, onDelete }: HistoryItemProps) {
     <div
       className={classNames(
         'group rounded-xl text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/[0.04] overflow-hidden flex justify-between items-center px-3 py-2 transition-all duration-200',
-        { 'text-gray-900 dark:text-white bg-black/5 dark:bg-white/[0.04] font-medium ring-1 ring-black/5 dark:ring-white/5': isActiveChat },
+        {
+          'text-gray-900 dark:text-white bg-black/5 dark:bg-white/[0.04] font-medium ring-1 ring-black/5 dark:ring-white/5':
+            isActiveChat,
+        },
       )}
     >
       {editing ? (
@@ -55,7 +58,12 @@ export function HistoryItem({ item, onDelete }: HistoryItemProps) {
         </form>
       ) : (
         <a href={`/chat/${item.urlId}`} className="flex w-full relative truncate block items-center gap-2 py-0.5">
-          <div className={classNames('w-1.5 h-1.5 rounded-full shrink-0', isActiveChat ? 'bg-blue-500' : 'bg-transparent group-hover:bg-gray-300 dark:group-hover:bg-gray-600')} />
+          <div
+            className={classNames(
+              'w-1.5 h-1.5 rounded-full shrink-0',
+              isActiveChat ? 'bg-blue-500' : 'bg-transparent group-hover:bg-gray-300 dark:group-hover:bg-gray-600',
+            )}
+          />
           <WithTooltip tooltip={currentDescription}>
             <span className="truncate pr-12">{currentDescription}</span>
           </WithTooltip>

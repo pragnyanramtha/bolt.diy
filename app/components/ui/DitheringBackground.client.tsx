@@ -1,8 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 
-const Dithering = lazy(() => 
-  import('@paper-design/shaders-react').then((mod) => ({ default: mod.Dithering }))
-);
+const Dithering = lazy(() => import('@paper-design/shaders-react').then((mod) => ({ default: mod.Dithering })));
 
 export default function DitheringBackground() {
   return (
@@ -11,7 +9,7 @@ export default function DitheringBackground() {
         {/* @ts-ignore - The component might not have fully typed props exported */}
         <Dithering
           colorBack="#00000000" // Transparent
-          colorFront="#3B82F6"  // Blue accent
+          colorFront="#3B82F6" // Blue accent
           shape="warp"
           type="4x4"
           speed={0.3}

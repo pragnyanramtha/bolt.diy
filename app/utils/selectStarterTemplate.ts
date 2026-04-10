@@ -5,8 +5,9 @@ import { STARTER_TEMPLATES } from './constants';
 
 const starterTemplateSelectionPrompt = (templates: Template[]) => `
 You are an experienced developer who helps people choose the best starter template for their projects.
-IMPORTANT: Vite is preferred
-IMPORTANT: Only choose shadcn templates if the user explicitly asks for shadcn.
+IMPORTANT: The DEFAULT template for ANY web app, UI, dashboard, landing page, or React project is "Vite React" (React + Vite + Tailwind CSS).
+IMPORTANT: Only choose shadcn templates if the user explicitly asks for shadcn or a component library.
+IMPORTANT: Only choose Next.js if the user explicitly asks for SSR, server-side rendering, or Next.js.
 
 Available templates:
 <template>
@@ -38,7 +39,7 @@ Examples:
 User: I need to build a todo app
 Response:
 <selection>
-  <templateName>react-basic-starter</templateName>
+  <templateName>Vite React</templateName>
   <title>Simple React todo application</title>
 </selection>
 </example>
@@ -239,13 +240,28 @@ If you need to make changes to functionality, create new files instead of modify
 
   userMessage += `
 ---
-template import is done, and you can now use the imported files,
-edit only the files that need to be changed, and you can create new files as needed.
-NO NOT EDIT/WRITE ANY FILES THAT ALREADY EXIST IN THE PROJECT AND DOES NOT NEED TO BE MODIFIED
----
-Now that the Template is imported please continue with my original request
+Template import is done. You can now use the imported files.
+Edit only files that need to be changed. Create new files as needed.
+DO NOT EDIT/WRITE any files that already exist and do not need modification.
 
-IMPORTANT: Dont Forget to install the dependencies before running the app by using \`npm install && npm run dev\`
+## UI-UX DESIGN FRAMEWORK (MANDATORY)
+
+The UI-UX Pro Max design system is powered by a hosted API.
+
+BEFORE writing any UI code (styles, colors, layout), you MUST fetch the design system:
+  curl -s "https://ui-ux-pro-max-api.vercel.app/design-system?q=<product_keywords>&project_name=<Project+Name>&format=markdown"
+
+Then use the EXACT colors, fonts, and style from the API response. Never invent your own design.
+
+## DEPENDENCY INSTALLATION (MANDATORY)
+
+To add new npm packages:
+1. Update package.json with the new dependencies first
+2. Run: npm install (no individual installs)
+
+Start the app: npm install && npm run dev
+---
+Now that the template is imported, please continue with my original request.
 `;
 
   return {

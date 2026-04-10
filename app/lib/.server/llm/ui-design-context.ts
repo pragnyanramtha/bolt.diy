@@ -55,10 +55,7 @@ Available stacks: react, nextjs, vue, svelte, html-tailwind, shadcn, react-nativ
           'Examples: "saas analytics dashboard dark modern", "beauty wellness spa elegant minimal", ' +
           '"fintech crypto trading dark glassmorphism", "ecommerce fashion store luxury"',
       ),
-    projectName: z
-      .string()
-      .optional()
-      .describe('The project name. Infer this from the user request if possible.'),
+    projectName: z.string().optional().describe('The project name. Infer this from the user request if possible.'),
   }),
   execute: async ({ query, projectName }) => {
     logger.info(`Fetching design system: query="${query}" project="${projectName ?? 'unset'}"`);

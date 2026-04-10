@@ -235,7 +235,11 @@ export const Menu = () => {
                         Delete Conversation
                       </DialogTitle>
                       <div className="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
-                        Are you sure you want to delete <span className="font-medium text-gray-900 dark:text-white inline-block px-1.5 py-0.5 rounded-md bg-black/5 dark:bg-white/5">"{dialogContent.item.description}"</span>? This action cannot be undone.
+                        Are you sure you want to delete{' '}
+                        <span className="font-medium text-gray-900 dark:text-white inline-block px-1.5 py-0.5 rounded-md bg-black/5 dark:bg-white/5">
+                          "{dialogContent.item.description}"
+                        </span>
+                        ? This action cannot be undone.
                       </div>
                     </div>
                     <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50/50 dark:bg-white/[0.02] border-t border-black/5 dark:border-white/5">
