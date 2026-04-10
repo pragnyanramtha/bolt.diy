@@ -10,6 +10,7 @@ import { createScopedLogger } from '~/utils/logger';
 import { createFilesContext, extractPropertiesFromMessage } from './utils';
 import { discussPrompt } from '~/lib/common/prompts/discuss-prompt';
 import type { DesignScheme } from '~/types/design-scheme';
+import { uiUxProMaxTools } from './ui-design-context';
 
 export type Messages = Message[];
 
@@ -273,6 +274,13 @@ export async function streamText(props: {
     ),
   );
 
+  /*
+   * Merge UI-UX Pro Max design tools with any existing tools (e.g. from MCP).
+   * In build mode the LLM decides when to call them and fills in the right query.
+   */
+  const mergedTools =
+    chatMode === 'build' ? { ...uiUxProMaxTools, ...(filteredOptions.tools ?? {}) } : (filteredOptions.tools ?? {});
+
   const streamParams = {
     model: provider.getModelInstance({
       model: modelDetails.name,
@@ -284,6 +292,7 @@ export async function streamText(props: {
     ...tokenParams,
     messages: convertToCoreMessages(processedMessages as any),
     ...filteredOptions,
+    tools: mergedTools,
 
     // Set temperature to 1 for reasoning models (required by OpenAI API)
     ...(isReasoning ? { temperature: 1 } : {}),
