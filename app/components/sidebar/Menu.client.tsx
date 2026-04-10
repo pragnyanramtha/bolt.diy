@@ -1,12 +1,11 @@
 import { motion, type Variants } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
-import { Dialog, DialogButton, DialogDescription, DialogRoot, DialogTitle } from '~/components/ui/Dialog';
+import { Dialog, DialogButton, DialogRoot, DialogTitle } from '~/components/ui/Dialog';
 import { ThemeSwitch } from '~/components/ui/ThemeSwitch';
 import { ControlPanel } from '~/components/@settings/core/ControlPanel';
-import { SettingsButton, HelpButton } from '~/components/ui/SettingsButton';
-import { Button } from '~/components/ui/Button';
-import { db, deleteById, getAll, chatId, type ChatHistoryItem, useChatHistory } from '~/lib/persistence';
+import { SettingsButton } from '~/components/ui/SettingsButton';
+import { db, deleteById, getAll, chatId, type ChatHistoryItem } from '~/lib/persistence';
 import { cubicEasingFn } from '~/utils/easings';
 import { HistoryItem } from './HistoryItem';
 import { useSearchFilter } from '~/lib/hooks/useSearchFilter';
@@ -17,8 +16,7 @@ import { profileStore } from '~/lib/stores/profile';
 const menuVariants = {
   closed: {
     opacity: 0,
-    visibility: 'hidden',
-    left: '-340px',
+    x: '-100%',
     transition: {
       duration: 0.2,
       ease: cubicEasingFn,
@@ -26,8 +24,7 @@ const menuVariants = {
   },
   open: {
     opacity: 1,
-    visibility: 'initial',
-    left: 0,
+    x: 0,
     transition: {
       duration: 0.2,
       ease: cubicEasingFn,
@@ -40,38 +37,13 @@ type DialogContent =
   | { type: 'bulkDelete'; items: ChatHistoryItem[] }
   | null;
 
-function CurrentDateTime() {
-  const [dateTime, setDateTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setDateTime(new Date());
-    }, 60000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 border-b border-gray-100 dark:border-gray-800/50">
-      <div className="h-4 w-4 i-ph:clock opacity-80" />
-      <div className="flex gap-2">
-        <span>{dateTime.toLocaleDateString()}</span>
-        <span>{dateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-      </div>
-    </div>
-  );
-}
-
 export const Menu = () => {
-  const { duplicateCurrentChat, exportChat } = useChatHistory();
   const menuRef = useRef<HTMLDivElement>(null);
   const [list, setList] = useState<ChatHistoryItem[]>([]);
   const [open, setOpen] = useState(false);
   const [dialogContent, setDialogContent] = useState<DialogContent>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const profile = useStore(profileStore);
-  const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   const { filteredItems: filteredList, handleSearchChange } = useSearchFilter({
     items: list,
@@ -93,18 +65,14 @@ export const Menu = () => {
         throw new Error('Database not available');
       }
 
-      // Delete chat snapshot from localStorage
       try {
         const snapshotKey = `snapshot:${id}`;
         localStorage.removeItem(snapshotKey);
-        console.log('Removed snapshot for chat:', id);
       } catch (snapshotError) {
         console.error(`Error deleting snapshot for chat ${id}:`, snapshotError);
       }
 
-      // Delete the chat from the database
       await deleteById(db, id);
-      console.log('Successfully deleted chat:', id);
     },
     [db],
   );
@@ -114,168 +82,32 @@ export const Menu = () => {
       event.preventDefault();
       event.stopPropagation();
 
-      // Log the delete operation to help debugging
-      console.log('Attempting to delete chat:', { id: item.id, description: item.description });
-
       deleteChat(item.id)
         .then(() => {
-          toast.success('Chat deleted successfully', {
-            position: 'bottom-right',
-            autoClose: 3000,
-          });
-
-          // Always refresh the list
+          toast.success('Chat deleted successfully');
           loadEntries();
 
           if (chatId.get() === item.id) {
-            // hard page navigation to clear the stores
-            console.log('Navigating away from deleted chat');
             window.location.pathname = '/';
           }
         })
         .catch((error) => {
           console.error('Failed to delete chat:', error);
-          toast.error('Failed to delete conversation', {
-            position: 'bottom-right',
-            autoClose: 3000,
-          });
-
-          // Still try to reload entries in case data has changed
-          loadEntries();
+          toast.error('Failed to delete conversation');
         });
     },
     [loadEntries, deleteChat],
-  );
-
-  const deleteSelectedItems = useCallback(
-    async (itemsToDeleteIds: string[]) => {
-      if (!db || itemsToDeleteIds.length === 0) {
-        console.log('Bulk delete skipped: No DB or no items to delete.');
-        return;
-      }
-
-      console.log(`Starting bulk delete for ${itemsToDeleteIds.length} chats`, itemsToDeleteIds);
-
-      let deletedCount = 0;
-      const errors: string[] = [];
-      const currentChatId = chatId.get();
-      let shouldNavigate = false;
-
-      // Process deletions sequentially using the shared deleteChat logic
-      for (const id of itemsToDeleteIds) {
-        try {
-          await deleteChat(id);
-          deletedCount++;
-
-          if (id === currentChatId) {
-            shouldNavigate = true;
-          }
-        } catch (error) {
-          console.error(`Error deleting chat ${id}:`, error);
-          errors.push(id);
-        }
-      }
-
-      // Show appropriate toast message
-      if (errors.length === 0) {
-        toast.success(`${deletedCount} chat${deletedCount === 1 ? '' : 's'} deleted successfully`);
-      } else {
-        toast.warning(`Deleted ${deletedCount} of ${itemsToDeleteIds.length} chats. ${errors.length} failed.`, {
-          autoClose: 5000,
-        });
-      }
-
-      // Reload the list after all deletions
-      await loadEntries();
-
-      // Clear selection state
-      setSelectedItems([]);
-      setSelectionMode(false);
-
-      // Navigate if needed
-      if (shouldNavigate) {
-        console.log('Navigating away from deleted chat');
-        window.location.pathname = '/';
-      }
-    },
-    [deleteChat, loadEntries, db],
   );
 
   const closeDialog = () => {
     setDialogContent(null);
   };
 
-  const toggleSelectionMode = () => {
-    setSelectionMode(!selectionMode);
-
-    if (selectionMode) {
-      // If turning selection mode OFF, clear selection
-      setSelectedItems([]);
-    }
-  };
-
-  const toggleItemSelection = useCallback((id: string) => {
-    setSelectedItems((prev) => {
-      const newSelectedItems = prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id];
-      console.log('Selected items updated:', newSelectedItems);
-
-      return newSelectedItems; // Return the new array
-    });
-  }, []); // No dependencies needed
-
-  const handleBulkDeleteClick = useCallback(() => {
-    if (selectedItems.length === 0) {
-      toast.info('Select at least one chat to delete');
-      return;
-    }
-
-    const selectedChats = list.filter((item) => selectedItems.includes(item.id));
-
-    if (selectedChats.length === 0) {
-      toast.error('Could not find selected chats');
-      return;
-    }
-
-    setDialogContent({ type: 'bulkDelete', items: selectedChats });
-  }, [selectedItems, list]); // Keep list dependency
-
-  const selectAll = useCallback(() => {
-    const allFilteredIds = filteredList.map((item) => item.id);
-    setSelectedItems((prev) => {
-      const allFilteredAreSelected = allFilteredIds.length > 0 && allFilteredIds.every((id) => prev.includes(id));
-
-      if (allFilteredAreSelected) {
-        // Deselect only the filtered items
-        const newSelectedItems = prev.filter((id) => !allFilteredIds.includes(id));
-        console.log('Deselecting all filtered items. New selection:', newSelectedItems);
-
-        return newSelectedItems;
-      } else {
-        // Select all filtered items, adding them to any existing selections
-        const newSelectedItems = [...new Set([...prev, ...allFilteredIds])];
-        console.log('Selecting all filtered items. New selection:', newSelectedItems);
-
-        return newSelectedItems;
-      }
-    });
-  }, [filteredList]); // Depends only on filteredList
-
   useEffect(() => {
     if (open) {
       loadEntries();
     }
   }, [open, loadEntries]);
-
-  // Exit selection mode when sidebar is closed
-  useEffect(() => {
-    if (!open && selectionMode) {
-      /*
-       * Don't clear selection state anymore when sidebar closes
-       * This allows the selection to persist when reopening the sidebar
-       */
-      console.log('Sidebar closed, preserving selection state');
-    }
-  }, [open, selectionMode]);
 
   useEffect(() => {
     const handleToggle = () => {
@@ -304,11 +136,6 @@ export const Menu = () => {
     };
   }, [open, isSettingsOpen]);
 
-  const handleDuplicate = async (id: string) => {
-    await duplicateCurrentChat(id);
-    loadEntries(); // Reload the list after duplication
-  };
-
   const handleSettingsClick = () => {
     setIsSettingsOpen(true);
     setOpen(false);
@@ -318,11 +145,6 @@ export const Menu = () => {
     setIsSettingsOpen(false);
   };
 
-  const setDialogContentWithLogging = useCallback((content: DialogContent) => {
-    console.log('Setting dialog content:', content);
-    setDialogContent(content);
-  }, []);
-
   return (
     <>
       <motion.div
@@ -330,137 +152,93 @@ export const Menu = () => {
         initial="closed"
         animate={open ? 'open' : 'closed'}
         variants={menuVariants}
-        style={{ width: '340px' }}
+        style={{ width: '300px' }}
         className={classNames(
           'flex selection-accent flex-col side-menu fixed top-0 h-full rounded-r-[24px]',
-          'bg-white dark:bg-[#0A0A0A] border-r border-black/5 dark:border-white/[0.04]',
-          'shadow-sm text-sm',
+          'bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-xl border-r border-black/5 dark:border-white/[0.04]',
+          'shadow-xl text-sm',
           isSettingsOpen ? 'z-40' : 'z-sidebar',
         )}
       >
-        <div className="h-14 flex items-center justify-between px-4 border-b border-black/5 dark:border-white/[0.04]">
-          <div className="text-gray-900 dark:text-white font-medium flex items-center gap-2">
-            <button
-              className="i-ph:sidebar-simple-duotone text-xl hover:text-blue-500 transition-colors mr-1"
-              onClick={() => setOpen(false)}
-            />
-            <div className="w-2 h-2 rounded-full bg-blue-500"></div> Kua
+        <div className="h-16 flex items-center justify-between px-6">
+          <div className="text-gray-900 dark:text-white font-semibold flex items-center gap-2.5 tracking-tight text-lg">
+            <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"></div>
+            Kua
           </div>
-          <div className="flex items-center gap-3">
-            <HelpButton onClick={() => window.open('https://stackblitz-labs.github.io/bolt.diy/', '_blank')} />
-            <span className="font-medium text-sm text-gray-900 dark:text-white truncate">
-              {profile?.username || 'Guest User'}
-            </span>
-            <div className="flex items-center justify-center w-[32px] h-[32px] overflow-hidden bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-500 rounded-full shrink-0">
-              {profile?.avatar ? (
-                <img
-                  src={profile.avatar}
-                  alt={profile?.username || 'User'}
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                  decoding="sync"
-                />
-              ) : (
-                <div className="i-ph:user-fill text-lg" />
-              )}
-            </div>
-          </div>
+          <button
+            className="p-2 rounded-xl bg-black dark:bg-zinc-800 text-white hover:bg-zinc-800 dark:hover:bg-zinc-700 transition-all duration-200 shadow-md active:scale-95"
+            onClick={() => setOpen(false)}
+            aria-label="Close Sidebar"
+          >
+            <div className="i-ph:sidebar-simple-bold text-xl" />
+          </button>
         </div>
+
         <div className="flex-1 flex flex-col h-full w-full overflow-hidden">
-          <div className="p-4 space-y-3">
-            <div className="flex gap-2">
-              <a
-                href="/"
-                className="flex-1 flex gap-2 items-center justify-center bg-blue-600 text-white hover:bg-blue-700 shadow-[0_0_15px_rgba(37,99,235,0.2)] rounded-xl px-4 py-2.5 transition-all duration-200"
-              >
-                <span className="inline-block i-ph:plus-circle h-4 w-4" />
-                <span className="text-sm font-medium">New Chat</span>
-              </a>
-              <button
-                onClick={toggleSelectionMode}
-                className={classNames(
-                  'flex gap-1 items-center rounded-xl px-3 py-2.5 transition-all duration-200',
-                  selectionMode
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-black/5 dark:bg-white/5 text-gray-700 dark:text-gray-300 hover:bg-black/10 dark:hover:bg-white/10',
-                )}
-                aria-label={selectionMode ? 'Exit selection mode' : 'Enter selection mode'}
-              >
-                <span className={selectionMode ? 'i-ph:x h-4 w-4' : 'i-ph:check-square h-4 w-4'} />
-              </button>
-            </div>
-            <div className="relative w-full">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                <span className="i-ph:magnifying-glass h-4 w-4 text-gray-400 dark:text-gray-500" />
+          <div className="p-4 space-y-4">
+            <a
+              href="/"
+              className="flex gap-2 items-center justify-center bg-blue-600 text-white hover:bg-blue-700 shadow-[0_4px_12px_rgba(37,99,235,0.2)] rounded-xl px-4 py-3 transition-all duration-200 group active:scale-[0.98]"
+            >
+              <span className="inline-block i-ph:plus-bold h-4 w-4 transition-transform group-hover:scale-110" />
+              <span className="text-sm font-semibold">New Chat</span>
+            </a>
+
+            <div className="relative w-full group">
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2">
+                <span className="i-ph:magnifying-glass h-4 w-4 text-gray-400 dark:text-gray-500 transition-colors group-focus-within:text-blue-500" />
               </div>
               <input
-                className="w-full bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 relative pl-9 pr-3 py-2.5 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500/50 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-500 transition-all"
+                className={classNames(
+                  'w-full bg-black/5 dark:bg-white/5 border border-transparent relative pl-10 pr-4 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:bg-white dark:focus:bg-[#111] focus:border-blue-500/50',
+                  'text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all duration-200',
+                )}
                 type="search"
-                placeholder="Search chats..."
+                placeholder="Search conversations..."
                 onChange={handleSearchChange}
                 aria-label="Search chats"
               />
             </div>
           </div>
-          <div className="flex items-center justify-between text-sm px-4 py-2">
-            <div className="font-medium text-gray-500 dark:text-gray-400">Your Chats</div>
-            {selectionMode && (
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={selectAll}>
-                  {selectedItems.length === filteredList.length ? 'Deselect all' : 'Select all'}
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleBulkDeleteClick}
-                  disabled={selectedItems.length === 0}
-                >
-                  Delete selected
-                </Button>
-              </div>
-            )}
+
+          <div className="px-6 py-2">
+            <div className="font-semibold text-[11px] uppercase tracking-wider text-gray-400 dark:text-gray-500">
+              History
+            </div>
           </div>
-          <div className="flex-1 overflow-auto px-3 pb-3">
+
+          <div className="flex-1 overflow-auto px-3 pb-3 custom-scrollbar">
             {filteredList.length === 0 && (
-              <div className="px-4 text-gray-500 dark:text-gray-400 text-sm">
-                {list.length === 0 ? 'No previous conversations' : 'No matches found'}
+              <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-500 text-xs italic">
+                {list.length === 0 ? 'No conversations yet' : 'No results found'}
               </div>
             )}
             <DialogRoot open={dialogContent !== null}>
-              <div className="space-y-0.5 pr-1 mt-2">
+              <div className="space-y-1 pr-1">
                 {filteredList.map((item) => (
                   <HistoryItem
                     key={item.id}
                     item={item}
-                    exportChat={exportChat}
                     onDelete={(event) => {
                       event.preventDefault();
                       event.stopPropagation();
-                      setDialogContentWithLogging({ type: 'delete', item });
+                      setDialogContent({ type: 'delete', item });
                     }}
-                    onDuplicate={() => handleDuplicate(item.id)}
-                    selectionMode={selectionMode}
-                    isSelected={selectedItems.includes(item.id)}
-                    onToggleSelection={toggleItemSelection}
                   />
                 ))}
               </div>
               <Dialog onBackdrop={closeDialog} onClose={closeDialog}>
                 {dialogContent?.type === 'delete' && (
-                  <>
-                    <div className="p-6 bg-white dark:bg-gray-950">
-                      <DialogTitle className="text-gray-900 dark:text-white">Delete Chat?</DialogTitle>
-                      <DialogDescription className="mt-2 text-gray-600 dark:text-gray-400">
-                        <p>
-                          You are about to delete{' '}
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {dialogContent.item.description}
-                          </span>
-                        </p>
-                        <p className="mt-2">Are you sure you want to delete this chat?</p>
-                      </DialogDescription>
+                  <div className="overflow-hidden rounded-2xl bg-white dark:bg-[#0D0D0D] border border-black/5 dark:border-white/5 shadow-2xl">
+                    <div className="p-6">
+                      <DialogTitle className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Delete Conversation
+                      </DialogTitle>
+                      <div className="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed text-sm">
+                        Are you sure you want to delete <span className="font-medium text-gray-900 dark:text-white inline-block px-1.5 py-0.5 rounded-md bg-black/5 dark:bg-white/5">"{dialogContent.item.description}"</span>? This action cannot be undone.
+                      </div>
                     </div>
-                    <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
+                    <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50/50 dark:bg-white/[0.02] border-t border-black/5 dark:border-white/5">
                       <DialogButton type="secondary" onClick={closeDialog}>
                         Cancel
                       </DialogButton>
@@ -474,54 +252,43 @@ export const Menu = () => {
                         Delete
                       </DialogButton>
                     </div>
-                  </>
-                )}
-                {dialogContent?.type === 'bulkDelete' && (
-                  <>
-                    <div className="p-6 bg-white dark:bg-gray-950">
-                      <DialogTitle className="text-gray-900 dark:text-white">Delete Selected Chats?</DialogTitle>
-                      <DialogDescription className="mt-2 text-gray-600 dark:text-gray-400">
-                        <p>
-                          You are about to delete {dialogContent.items.length}{' '}
-                          {dialogContent.items.length === 1 ? 'chat' : 'chats'}:
-                        </p>
-                        <div className="mt-2 max-h-32 overflow-auto border border-gray-100 dark:border-gray-800 rounded-md bg-gray-50 dark:bg-gray-900 p-2">
-                          <ul className="list-disc pl-5 space-y-1">
-                            {dialogContent.items.map((item) => (
-                              <li key={item.id} className="text-sm">
-                                <span className="font-medium text-gray-900 dark:text-white">{item.description}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                        <p className="mt-3">Are you sure you want to delete these chats?</p>
-                      </DialogDescription>
-                    </div>
-                    <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800">
-                      <DialogButton type="secondary" onClick={closeDialog}>
-                        Cancel
-                      </DialogButton>
-                      <DialogButton
-                        type="danger"
-                        onClick={() => {
-                          const itemsToDeleteNow = [...selectedItems];
-                          deleteSelectedItems(itemsToDeleteNow);
-                          closeDialog();
-                        }}
-                      >
-                        Delete
-                      </DialogButton>
-                    </div>
-                  </>
+                  </div>
                 )}
               </Dialog>
             </DialogRoot>
           </div>
-          <div className="flex items-center justify-between border-t border-black/5 dark:border-white/[0.04] px-5 py-4">
-            <div className="flex items-center gap-3">
-              <SettingsButton onClick={handleSettingsClick} />
+
+          <div className="mt-auto border-t border-black/5 dark:border-white/[0.04] p-4 bg-black/[0.01] dark:bg-white/[0.01]">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 group px-2 py-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-all duration-200 flex-1 min-w-0">
+                <div className="relative shrink-0">
+                  <div className="flex items-center justify-center w-9 h-9 overflow-hidden bg-zinc-100 dark:bg-zinc-800 border border-black/5 dark:border-white/5 text-zinc-500 dark:text-zinc-400 rounded-lg shadow-sm">
+                    {profile?.avatar ? (
+                      <img
+                        src={profile.avatar}
+                        alt={profile?.username || 'User'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="i-ph:user-duotone text-xl" />
+                    )}
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white dark:border-[#0A0A0A] rounded-full shadow-sm"></div>
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="font-semibold text-sm text-gray-900 dark:text-white truncate tracking-tight">
+                    {profile?.username || 'Guest'}
+                  </span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-500 font-medium uppercase tracking-tighter">
+                    Free Plan
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <SettingsButton onClick={handleSettingsClick} />
+                <ThemeSwitch />
+              </div>
             </div>
-            <ThemeSwitch />
           </div>
         </div>
       </motion.div>
